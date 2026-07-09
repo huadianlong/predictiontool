@@ -2,9 +2,124 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>Hello Netlify</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>暴发性心肌炎风险预测工具</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: "Microsoft Yahei", system-ui, sans-serif;
+        }
+        body {
+            max-width: 900px;
+            margin: 32px auto;
+            padding: 0 20px;
+            background-color: #f8fafc;
+        }
+        h1 {
+            color: #1677ff;
+            text-align: center;
+        }
+        .form-item {
+            margin: 22px 0;
+        }
+        .form-item label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 16px;
+            color: #222;
+        }
+        .form-item input {
+            width: 100%;
+            padding: 12px 10px;
+            border: 1px solid #d0d7de;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+        /* 第一个输入框蓝色高亮边框匹配截图 */
+        .form-item:first-child input {
+            border-color: #4096ff;
+            box-shadow: 0 0 0 3px rgba(64, 150, 255, 0.15);
+        }
+        #predict-btn {
+            width: 100%;
+            background-color: #006cfa;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 14px 0;
+            font-size: 17px;
+            cursor: pointer;
+            margin: 10px 0 28px;
+        }
+        #predict-btn:hover {
+            background-color: #025fe0;
+        }
+        .intro-block {
+            background: #ffffff;
+            padding: 18px;
+            border-radius: 10px;
+        }
+        .intro-block h2 {
+            color: #1677ff;
+            margin-top: 0;
+            font-size: 22px;
+        }
+        .disclaimer {
+            margin-top: 14px;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+        }
+    </style>
 </head>
 <body>
-    <h1>Hello World！Netlify 部署成功</h1>
+<h1>暴发性心肌炎风险预测工具</h1>
+
+<div class="form-item">
+    <label>收缩压 (SBP, mmHg):</label>
+    <input type="number" placeholder="填写数值" min="40" max="300">
+</div>
+<div class="form-item">
+    <label>天门冬氨酸氨基转移酶 (AST, U/L):</label>
+    <input type="number" placeholder="填写数值" min="1" max="1000">
+</div>
+<div class="form-item">
+    <label>左室射血分数 (LVEF, %):</label>
+    <input type="number" placeholder="填写数值" min="10" max="90">
+</div>
+<div class="form-item">
+    <label>D二聚体 (DD, mg/L):</label>
+    <input type="number" step="0.01" placeholder="填写数值" min="0">
+</div>
+<div class="form-item">
+    <label>N末端脑钠肽前体 (NTpro, pg/mL):</label>
+    <input type="number" placeholder="填写数值" min="0">
+</div>
+
+<button id="predict-btn">开始预测</button>
+
+<div class="intro-block">
+    <h2>工具简介</h2>
+    <p>本工具基于极限梯度提升（Extreme Gradient Boosting）机器学习算法构建，使用临床数据（收缩压、AST、LVEF、D二聚体、NT-proBNP）开展暴发性心肌炎的风险评估。</p>
+    <p class="disclaimer">免责声明：本工具仅可用于科研场景做风险辅助参考，输出内容不能替代医院医师的专业诊断、线下化验评估，请勿仅凭网页结果自行开展诊疗决策。</p>
+</div>
+
+<script>
+    // 简单前端输入校验示范，后续可接入XGBoost预测逻辑
+    document.querySelector("#predict-btn").addEventListener("click", ()=>{
+        const inputs = document.querySelectorAll("input");
+        for(let el of inputs){
+            if(!el.value.trim()){
+                alert("请补齐全部化验指标数值");
+                return;
+            }
+            if(el.checkValidity() === false){
+                alert("输入的数值不在合理临床区间，请核对");
+                return;
+            }
+        }
+        alert("参数校验通过，可对接预测模型运算风险等级");
+    })
+</script>
 </body>
 </html>
