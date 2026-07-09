@@ -2,8 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>肺结核合并糖尿病患者营养不良风险预测工具</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
         * {
             box-sizing: border-box;
@@ -103,13 +102,6 @@
 <body>
 <h1>肺结核合并糖尿病患者营养不良风险预测工具</h1>
 
-<div id="result-box">
-    <h3>预测结果</h3>
-    <div class="result-row">综合得分(X)：<span id="x-val"></span></div>
-    <div class="result-row">营养不良发生概率：<span id="p-percent"></span></div>
-    <div class="result-row">风险判定：<strong id="risk-text"></strong></div>
-</div>
-
 <div class="form-item">
     <label>年龄(Age，岁):</label>
     <input id="age" type="number" placeholder="参考模板：58" min="18" max="110">
@@ -136,6 +128,13 @@
     <button id="clear-btn">清空重置</button>
 </div>
 
+<div id="result-box">
+    <h3>预测结果</h3>
+    <div class="result-row">综合得分(X)：<span id="x-val"></span></div>
+    <div class="result-row">营养不良发生概率：<span id="p-percent"></span></div>
+    <div class="result-row">风险判定：<strong id="risk-text"></strong></div>
+</div>
+
 <div class="intro-block">
     <h2>工具简介</h2>
     <p>本工具基于风险预测模型构建，使用临床数据（年龄,病程,糖化血红蛋白,查尔森并发症指数,衰弱状况）开展肺结核合并糖尿病患者营养不良风险的评估。</p>
@@ -150,6 +149,20 @@ const xValDom = document.querySelector("#x-val");
 const pPercentDom = document.querySelector("#p-percent");
 const riskTextDom = document.querySelector("#risk-text");
 const inputList = document.querySelectorAll("input");
+
+// ==========新增：手机输入框自动滚动防遮挡逻辑==========
+inputList.forEach(input => {
+    input.addEventListener("focus", function(){
+        // 延迟300毫秒，等待手机软键盘完全弹出再滚动
+        setTimeout(() => {
+            // 平滑滚动，当前输入框自动到屏幕中间，避开底部键盘
+            this.scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+        }, 300);
+    })
+})
 
 // 预测计算逻辑
 predictBtn.addEventListener("click", ()=>{
