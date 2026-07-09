@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>暴发性心肌炎风险预测工具</title>
+    <title>肺结核合并糖尿病患者营养不良风险预测工具</title>
     <style>
         * {
             box-sizing: border-box;
@@ -35,13 +35,17 @@
             border-radius: 8px;
             font-size: 15px;
         }
-        /* 第一个输入框蓝色高亮边框匹配截图 */
         .form-item:first-child input {
             border-color: #4096ff;
             box-shadow: 0 0 0 3px rgba(64, 150, 255, 0.15);
         }
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            margin: 10px 0 28px;
+        }
         #predict-btn {
-            width: 100%;
+            flex: 1;
             background-color: #006cfa;
             color: white;
             border: none;
@@ -49,10 +53,22 @@
             padding: 14px 0;
             font-size: 17px;
             cursor: pointer;
-            margin: 10px 0 28px;
         }
         #predict-btn:hover {
             background-color: #025fe0;
+        }
+        #clear-btn {
+            width: 140px;
+            background-color: #f0f2f5;
+            color: #333;
+            border: 1px solid #d0d7de;
+            border-radius: 8px;
+            padding: 14px 0;
+            font-size: 17px;
+            cursor: pointer;
+        }
+        #clear-btn:hover {
+            background-color: #e5e7eb;
         }
         .intro-block {
             background: #ffffff;
@@ -70,56 +86,126 @@
             color: #666;
             line-height: 1.6;
         }
+        /* 动态变色结果卡片 */
+        #result-box {
+            display: none;
+            padding: 22px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+        .risk-low {background:#ecfdf3;border:1px solid #22c55e;}
+        .risk-mid {background:#fff7ed;border:1px solid #f97316;}
+        .risk-high {background:#fef2f2;border:1px solid #ef4444;}
+        #result-box h3 {margin:0 0 12px 0}
+        .result-row {margin:8px 0;font-size:16px}
     </style>
 </head>
 <body>
-<h1>暴发性心肌炎风险预测工具</h1>
+<h1>肺结核合并糖尿病患者营养不良风险预测工具</h1>
+
+<div id="result-box">
+    <h3>预测结算结果</h3>
+    <div class="result-row">线性综合得分(X)：<span id="x-val"></span></div>
+    <div class="result-row">营养不良发生概率：<span id="p-percent"></span></div>
+    <div class="result-row">风险分层判定：<strong id="risk-text"></strong></div>
+</div>
 
 <div class="form-item">
-    <label>收缩压 (SBP, mmHg):</label>
-    <input type="number" placeholder="填写数值" min="40" max="300">
+    <label>年龄(Age，岁):</label>
+    <input id="age" type="number" placeholder="参考模板：58" min="18" max="110">
 </div>
 <div class="form-item">
-    <label>天门冬氨酸氨基转移酶 (AST, U/L):</label>
-    <input type="number" placeholder="填写数值" min="1" max="1000">
+    <label>病程(COD，月):</label>
+    <input id="cod" type="number" placeholder="参考模板：36" min="0" max="360">
 </div>
 <div class="form-item">
-    <label>左室射血分数 (LVEF, %):</label>
-    <input type="number" placeholder="填写数值" min="10" max="90">
+    <label>糖化血红蛋白(HbA1c，%):</label>
+    <input id="hba1c" type="number" step="0.01" placeholder="参考模板：8.75" min="3.0" max="18.0">
 </div>
 <div class="form-item">
-    <label>D二聚体 (DD, mg/L):</label>
-    <input type="number" step="0.01" placeholder="填写数值" min="0">
+    <label>查尔森并发症指数(CCI，分):</label>
+    <input id="cci" type="number" placeholder="参考模板：3" min="0" max="30">
 </div>
 <div class="form-item">
-    <label>N末端脑钠肽前体 (NTpro, pg/mL):</label>
-    <input type="number" placeholder="填写数值" min="0">
+    <label>衰弱状况(FRAIL，分):</label>
+    <input id="frail" type="number" placeholder="参考模板：2" min="0" max="5">
 </div>
 
-<button id="predict-btn">开始预测</button>
+<div class="btn-row">
+    <button id="predict-btn">开始预测</button>
+    <button id="clear-btn">清空重置</button>
+</div>
 
 <div class="intro-block">
     <h2>工具简介</h2>
-    <p>本工具基于极限梯度提升（Extreme Gradient Boosting）机器学习算法构建，使用临床数据（收缩压、AST、LVEF、D二聚体、NT-proBNP）开展暴发性心肌炎的风险评估。</p>
-    <p class="disclaimer">免责声明：本工具仅可用于科研场景做风险辅助参考，输出内容不能替代医院医师的专业诊断、线下化验评估，请勿仅凭网页结果自行开展诊疗决策。</p>
+    <p>本工具基于风险预测模型构建，使用临床数据（年龄,病程,糖化血红蛋白,查尔森并发症指数,衰弱状况）开展肺结核合并糖尿病患者营养不良风险的评估。</p>
+    <p class="disclaimer">免责声明：本工具仅可用于科研场景做风险辅助参考，输出内容不能替代医院医师的专业诊断、线下诊疗评估，请勿仅凭网页结果自行开展诊疗决策。</p>
 </div>
 
 <script>
-    // 简单前端输入校验示范，后续可接入XGBoost预测逻辑
-    document.querySelector("#predict-btn").addEventListener("click", ()=>{
-        const inputs = document.querySelectorAll("input");
-        for(let el of inputs){
-            if(!el.value.trim()){
-                alert("请补齐全部化验指标数值");
-                return;
-            }
-            if(el.checkValidity() === false){
-                alert("输入的数值不在合理临床区间，请核对");
-                return;
-            }
+const predictBtn = document.querySelector("#predict-btn");
+const clearBtn = document.querySelector("#clear-btn");
+const resultBox = document.querySelector("#result-box");
+const xValDom = document.querySelector("#x-val");
+const pPercentDom = document.querySelector("#p-percent");
+const riskTextDom = document.querySelector("#risk-text");
+const inputList = document.querySelectorAll("input");
+
+// 预测计算逻辑
+predictBtn.addEventListener("click", ()=>{
+    // 读取表单输入
+    const age = parseFloat(document.getElementById("age").value);
+    const cod = parseFloat(document.getElementById("cod").value);
+    const hba1c = parseFloat(document.getElementById("hba1c").value);
+    const cci = parseFloat(document.getElementById("cci").value);
+    const frail = parseFloat(document.getElementById("frail").value);
+
+    // 空值合法性校验
+    const fieldList = [
+        {v:age,name:"年龄"},{v:cod,name:"病程"},{v:hba1c,name:"糖化血红蛋白"},
+        {v:cci,name:"查尔森并发症指数"},{v:frail,name:"衰弱状况"}
+    ];
+    for (const item of fieldList) {
+        if (isNaN(item.v)) {
+            alert(`【${item.name}】不能为空，请补充合法数值`);
+            return;
         }
-        alert("参数校验通过，可对接预测模型运算风险等级");
-    })
+    }
+
+    // 严格套用最新线性公式
+    const X = -6.333 + 0.071 * age + 0.576 * cod + 0.074 * hba1c + 0.081 * cci + 0.079 * frail;
+    // sigmoid概率换算
+    const P = 1 / (1 + Math.exp(-X));
+    const percentText = (P * 100).toFixed(2) + "%";
+
+    // 风险等级+卡片配色分配
+    let riskLevel, themeClass;
+    if (P < 0.3) {
+        riskLevel = "低营养不良风险";
+        themeClass = "risk-low";
+    } else if (P < 0.7) {
+        riskLevel = "中等营养不良风险";
+        themeClass = "risk-mid";
+    } else {
+        riskLevel = "高营养不良风险";
+        themeClass = "risk-high";
+    }
+
+    // 页面回填展示结果
+    resultBox.className = themeClass;
+    resultBox.style.display = "block";
+    xValDom.innerText = X.toFixed(3);
+    pPercentDom.innerText = percentText;
+    riskTextDom.innerText = riskLevel;
+})
+
+// 清空重置逻辑
+clearBtn.addEventListener("click", ()=>{
+    // 清空所有输入框
+    inputList.forEach(input => input.value = "");
+    // 隐藏结果面板
+    resultBox.style.display = "none";
+})
 </script>
 </body>
 </html>
